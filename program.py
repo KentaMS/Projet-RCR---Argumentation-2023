@@ -42,18 +42,25 @@ def read_data_from_directory(path_to_data):
                     
     return AF_dictionary, complete_dictionary, stable_dictionary
 
+# Read and create the AF from the file as a dictionnary (key: attacking arg, value : args it attacks)
 def read_AF_from_file(path, file_name):
+    file_path = path + file_name
+
+    if not os.path.exists(file_path):
+        print(f"The file {file_path} does not exist.")
+        sys.exit(1)
+
     graph = {}
         
-    with open(path + file_name, 'r') as file:
+    with open(file_path, 'r') as file:
         for line in file:
             content = line[line.find("(")+1 : line.find(")")]
             if "arg" in line:
                 argument = content
                 graph[argument] = []
             elif "att" in line:
-                attack = content.split(',')
-                graph[attack[0]] += [attack[1]]
+                attacker, attacked = content.split(',')[0], content.split(',')[1]
+                graph[attacker].append(attacked)
                 
     return graph
 
@@ -174,13 +181,18 @@ def solve_methode(param, arg_framework, arg_list):
         sys.exit(1)
 
 #=========================================================#
-param, file, arg_list = get_command_args() # args recovery
-path_to_data = "./data/"
-arg_framework = read_AF_from_file(path_to_data, file)
-print(solve_methode(param, arg_framework, arg_list))
+def main():
+    param, file, arg_list = get_command_args() # args recovery
+    path_to_data = "./data/"
+    arg_framework = read_AF_from_file(path_to_data, file)
+    print(arg_framework)
+    print(solve_methode(param, arg_framework, arg_list))
 
-# graphs, co, st = read_data_from_directory(path_to_data)
-# print(graphs)
-# print(co)
-# print(st)
+    # graphs, co, st = read_data_from_directory(path_to_data)
+    # print(graphs)
+    # print(co)
+    # print(st)
+
+if __name__ == '__main__':
+    main()
 
