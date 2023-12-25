@@ -133,7 +133,7 @@ def verify_stable_extension(arg_framework, arg_list):
 
     # Check if arg_list is conflict free
     if(not(is_conflict_free(arg_framework, arg_list))):
-        return "NO"
+        return False
 
     # arg_list is stable if all args in others_args are attacked
     others_args = [arg for arg in list(arg_framework.keys()) if arg not in arg_list]
@@ -143,8 +143,8 @@ def verify_stable_extension(arg_framework, arg_list):
                 others_args.remove(attacked_arg)
 
     if(len(others_args)==0): # All args were attacked, then arg_list is stable
-        return "YES"
-    return "NO"
+        return True
+    return False
 
 def decide_stable_credulous(arg_framework, arg_list):
     return True
@@ -175,7 +175,7 @@ def solve_methode(param, arg_framework, arg_list):
 
 #=========================================================#
 param, file, arg_list = get_command_args() # args recovery
-path_to_data = "./data/" # par la suite, directement faire "./data/" + file
+path_to_data = "./data/"
 arg_framework = read_AF_from_file(path_to_data, file)
 print(solve_methode(param, arg_framework, arg_list))
 
