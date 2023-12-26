@@ -6,44 +6,46 @@ import os, sys, argparse, re
 
 # Get arguments in the command line
 def get_command_args():
-    parser = argparse.ArgumentParser(description="Abstract Argumentation Solver - A software which solves VE-CO, DC-CO, DS-CO, VE-ST, DC-ST, DS-ST problems.")
+    parser = argparse.ArgumentParser(description="Abstract Argumentation Solver - A software which solves VE-CO, DC-CO, DS-CO, VE-ST, DC-ST and DS-ST problems.")
     
     # Arguments for the command
-    parser.add_argument('-p', '--param', type=str, help='VE-CO or DC-CO or DS-CO or VE-ST or DC-ST or DS-ST.')
-    parser.add_argument('-f', '--file', type=str, help='File.apx to read (Describe an Argumentation Framework AF).')
-    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set S (for VE-XX problems) or ARG (for DC-XX or DS-XX problems).')
+    parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
+    parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
+    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
     
     # Read args in the command
     command_args = parser.parse_args()
 
-    # regular expression for arguments (any sequence of letters (upper case or lower case), numbers, or the underscore symbole _)
-    regex_pattern = re.compile(r"^(?!att$|arg$)[a-zA-Z0-9_]+$")
+    # Regular expression for arguments. Can be any sequence of letters (upper case or lower case), numbers, 
+    # or the underscore symbol _, with the exception of the following sequences: "att" and "arg"
+    regex_pattern = re.compile(r"^(?!att$|arg$)\w+$")
 
     # Get command args
-    param_value = command_args.param # param for the problem (VE-CO, DC-CO, DS-CO...)
-    file_value = command_args.file # file to read (.txt)
+    file_name = command_args.file # file to read (.apx)
+    problem_name = command_args.param # param for the problem (VE-CO, DC-CO, DS-CO...)
     if len(command_args.args) > 1 :
-        args_value = set(command_args.args.split(",")) # set of args
+        args_value = set(command_args.args.split(",")) # Set of arguments
     else:
         args_value = command_args.args # arg
 
-    # Checks valid arguments
-    for argument in args_value:
-        if not regex_pattern.match(argument):
-            print("Unaccepted argument(s)) Remember, the name of an argument can be any sequence of letters (upper case or lower case), numbers, or the underscore symbole _, except the words argument and att which are reserved for defining the lines.")
-            sys.exit(1)
+    # Checks for valid arguments. Raise a ValueError if at least one of them is not
+    if not all(regex_pattern.match(argument) for argument in args_value):    
+        raise ValueError("Unaccepted argument(s). The name of an argument can be any sequence of letters " +
+                         "(upper case or lower case), numbers, or the underscore symbol _, except the " +
+                         "words 'argument' and 'att' which are reserved for defining the lines.")
 
-    check_number_of_arguments(args_value, param_value)
+    # Raise a ValueError if the number of provided arguments is not coherent with the specified problem
+    if not is_number_of_arguments_valid(args_value, problem_name):
+        raise ValueError("Only one argument should be specified for the Determine-XX problems.")
 
-    return param_value, file_value, args_value
+    return problem_name, file_name, args_value
 
 
-# Checks if the number of provided arguments is valid (Only one should be given when using the determine problems)
-def check_number_of_arguments(arg_set, param):
-    if(param.startswith("DC") or param.startswith("DS")):
-        if len(arg_set) != 1:
-            print("Only one argument should be specified for the determine problems.")
-            sys.exit(1)
+# Checks if the number of provided arguments is valid or not (only one should be specified when using the Determine-XX problems)
+def is_number_of_arguments_valid(arg_set, param):
+    if param.startswith("DC") or param.startswith("DS"):
+        return not len(arg_set) != 1
+    return True
 
 
 # Returns the argumentation framework (AF) read from the specified file as a dictionary
@@ -104,9 +106,10 @@ def is_conflict_free(arg_framework, arg_set):
 
 
 # Returns the powerset of the given arguments. In other words, give all possible combinations of arguments as a set of subsets.
+# Inspired by the powerset recipe under the following documentation: https://docs.python.org/3/library/itertools.html#itertools-recipes
 def powerset(arguments):
-    s = list(arguments)
-    return set(chain.from_iterable(combinations(s, r) for r in range(len(s) + 1)))
+    arg_list = list(arguments)
+    return set(chain.from_iterable(combinations(arg_list, r) for r in range(len(arg_list) + 1)))
 
 
 # Checks if the provided argument set is a complete extension
@@ -131,7 +134,7 @@ def find_all_complete_extensions(arg_framework):
     all_arguments = arg_framework.keys()
     for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments
         if is_a_complete_extension(arg_framework, arg_set):
-            all_complete_extensions.add(tuple(arg_set))
+            all_complete_extensions.add(tuple(sorted(arg_set))) # Sort the set in order for the comparison to work properly in verify_complete_extension
             
     return all_complete_extensions
     
@@ -145,7 +148,7 @@ def find_all_stable_extensions(arg_framework):
     all_arguments = arg_framework.keys()
     for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments
         if verify_stable_extension(arg_framework, arg_set): # Keep the ones that are stable
-            all_stable_extensions.add(tuple(arg_set))
+            all_stable_extensions.add(tuple(sorted(arg_set)))
 
     return all_stable_extensions
 
@@ -153,7 +156,7 @@ def find_all_stable_extensions(arg_framework):
 # Determine whether the provided argument set is a complete extension of the argumentation framework or not
 def verify_complete_extension(arg_framework, arg_set):
     complete_extensions = find_all_complete_extensions(arg_framework)
-    return tuple(arg_set) in complete_extensions
+    return tuple(sorted(arg_set)) in complete_extensions
 
 
 # Decide the Credulous acceptability of the given argument with respect to σ = complete
@@ -172,19 +175,20 @@ def decide_complete_skeptical(arg_framework, argument):
 
 # Determine whether the provided argument set is a stable extension of the argumentation framework or not
 def verify_stable_extension(arg_framework, arg_set):
-    # Check if arg_set is conflict free
-    if not is_conflict_free(arg_framework, arg_set):
-        return False
 
-    # arg_set is stable if all args in others_args are attacked
-    others_args = {argument for argument in arg_framework.keys() if argument not in arg_set} # set of others args
+    # The set has to be conflict-free to be a stable extension
+    if not is_conflict_free(arg_framework, arg_set): return False
+        
+    # Create a set of all arguments of the framework that are not in the provided argument set
+    other_args = {argument for argument in arg_framework.keys() if argument not in arg_set}
 
+    # arg_set is stable if all args in other_args are attacked
     for current_arg in arg_set:
         for attacked_arg in arg_framework[current_arg]:
-            if attacked_arg in others_args:
-                others_args.remove(attacked_arg)
+            if attacked_arg in other_args:
+                other_args.remove(attacked_arg)
 
-    if len(others_args) == 0: # All args were attacked, then arg_set is stable
+    if len(other_args) == 0: # All args were attacked, so arg_set is stable
         return True
     return False
 
@@ -225,20 +229,26 @@ def solve_problem(param, arg_framework, arg_set):
     elif param == "DS-ST":
         return decide_stable_skeptical(arg_framework, arg_set)
     else:
-        print("Error : Unknown parameter.")
-        print("Please choose one of these : VE-CO or DC-CO or DS-CO or VE-ST or DC-ST or DS-ST.")
-        sys.exit(1)
+        raise ValueError("Unknown parameter.\n" +
+                         "Please choose one of these : VE-CO or DC-CO or DS-CO or VE-ST or DC-ST or DS-ST.")
 
 
 #=========================================================#
         
         
 def main():
-    param, file, arg_set = get_command_args() # Recover the arguments provided with the script execution
-    path_to_data = "./data/"
-    arg_framework = read_AF_from_file(path_to_data + file)
-    if solve_problem(param, arg_framework, arg_set): print("YES")
-    else: print("NO")
+    try:
+        param, file, arg_set = get_command_args() # Recover the arguments provided with the script execution
+
+        path_to_data = "./data/"
+        arg_framework = read_AF_from_file(path_to_data + file)
+
+        if solve_problem(param, arg_framework, arg_set): print("YES")
+        else: print("NO")
+
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
