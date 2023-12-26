@@ -19,7 +19,7 @@ Avec :
 
 Dans le cas d'un problème DC-XX ou DS-XX, un seul argument ARG doit être spécifié avec -a.  
 
-## Exemple de commandes valides :
+## Exemple de commandes :
 Un helper récapitulant ces différentes options est disponible via la commande suivante :
 
     ~$ python3 program.py --help
