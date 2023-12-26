@@ -206,10 +206,10 @@ def is_argument_set_in_AF(arg_framework, arg_set):
     return all(argument in arg_framework.keys() for argument in arg_set)
 
 
-# Returns either YES or NO depending on the problem
+# Returns either True (YES) or False (NO) depending on the problem
 def solve_problem(param, arg_framework, arg_set):
 
-    # Return NO if at least one of the arguments in the provided set does not belong to the argumentation framework
+    # Return False if at least one of the arguments in the provided set does not belong to the argumentation framework
     if not is_argument_set_in_AF(arg_framework, arg_set): return False
 
     if param == "VE-CO":
