@@ -161,3 +161,5 @@ cython_debug/
 
 # Temps file
 tempCodeRunnerFile.py
+
+.vscode/
