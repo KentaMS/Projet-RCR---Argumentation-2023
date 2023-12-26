@@ -280,8 +280,7 @@ def main():
     try:
         param, file, arg_set = get_command_args() # Recover the arguments provided with the script execution.
 
-        path_to_data = "./data/"
-        arg_framework = read_AF_from_file(path_to_data + file)
+        arg_framework = read_AF_from_file(file)
 
         result = solve_problem(param, arg_framework, arg_set)
         print_result(result)
