@@ -63,7 +63,7 @@ def read_AF_from_file(file_path: str) -> dict:
     # Regular expression for arguments. 
     # Each argument is defined in a line of the form "arg(name_argument)." 
     # Each attack is defined in a line of the form "att(name_argument_1,name_argument_2)."
-    regex_pattern = re.compile(r'(?:arg\(\w+\)|att\(\w+,\w+\))\.$') 
+    regex_pattern = re.compile(r'^(arg\(\w+\)|att\(\w+,\w+\))\.$')
 
     with open(file_path, 'r') as file:
         for line in file:
