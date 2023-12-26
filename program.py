@@ -1,3 +1,6 @@
+# Authors: Latif YAYA, Nassim LATTAB, Kentaro SAUCE
+# Date: 25/12/2023
+
 from itertools import chain, combinations # Used to generate the powerset @see powerset(arguments)
 import os, sys, argparse, re
 
