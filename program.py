@@ -8,13 +8,13 @@ def get_command_args():
     # Arguments for the command
     parser.add_argument('-p', '--param', type=str, help='VE-CO or DC-CO or DS-CO or VE-ST or DC-ST or DS-ST.')
     parser.add_argument('-f', '--file', type=str, help='File.apx to read (Describe an Argumentation Framework AF).')
-    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set S (for VE-XX problems) or argument (for DC-XX or DS-XX problems).')
+    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set S (for VE-XX problems) or ARG (for DC-XX or DS-XX problems).')
     
     # Read args in the command
     command_args = parser.parse_args()
 
     # regular expression for arguments (any sequence of letters (upper case or lower case), numbers, or the underscore symbole _)
-    regex_pattern = re.compile(r"^(?!att$|argument$)[a-zA-Z0-9_]+$")
+    regex_pattern = re.compile(r"^(?!att$|arg$)[a-zA-Z0-9_]+$")
 
     # Get command args
     param_value = command_args.param # param for the problem (VE-CO, DC-CO, DS-CO...)
@@ -22,7 +22,7 @@ def get_command_args():
     if len(command_args.args) > 1 :
         args_value = set(command_args.args.split(",")) # set of args
     else:
-        args_value = command_args.args # argument
+        args_value = command_args.args # arg
 
     # Checks valid arguments
     for argument in args_value:
@@ -55,10 +55,10 @@ def read_AF_from_file(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             content = line[line.find("(")+1 : line.find(")")]
-            if "argument" in line:
+            if line.startswith("arg"):
                 argument = content
                 graph[argument] = set()
-            elif "att" in line:
+            elif line.startswith("att"):
                 attacker, attacked = content.split(',')[0], content.split(',')[1]
                 graph[attacker].add(attacked)
                 
