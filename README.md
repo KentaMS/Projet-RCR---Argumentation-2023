@@ -9,5 +9,5 @@ Placer le fichier .apx contenant les informations de l'Abstract Argumentation Fr
 Lancer le programme à l'aide du cmd en spécifiant les paramètres de la manière suivante :  
 **python3 program.py -f [nom du fichier].apx -p [type du problème] -a [ARG1,ARG2,...,ARGn]** .  
 Avec **[type du problème]** = VE-CO, DC-CO, DS-CO, VE-ST, DC-ST ou DS-ST.  
+Ainsi que **[ARG1,ARG2,...,ARGn]** selon les conventions de nommage des arguments : alphanumérique sensible à la case, '_' compris, et "att" et "arg" exclus.  
 Dans le cas d'un problème DC-XX ou DS-XX, un seul argument ARG doit être spécifié avec -a.  
-Ainsi que **[ARG1,ARG2,...,ARGn]** selon les conventions de nommage des arguments : alphanumérique sensible à la case, '_' compris, et "att" et "arg" exclus.
