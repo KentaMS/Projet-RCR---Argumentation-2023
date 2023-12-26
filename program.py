@@ -63,7 +63,7 @@ def read_AF_from_file(file_path: str) -> dict:
     # Regular expression for arguments. 
     # Each argument is defined in a line of the form "arg(name_argument)." 
     # Each attack is defined in a line of the form "att(name_argument_1,name_argument_2)."
-    regex_pattern = re.compile(r'\b(?:arg\([A-Za-z0-9_]+\)|att\([A-Za-z0-9_]+,[A-Za-z0-9_]+\))\.') 
+    regex_pattern = re.compile(r'(?:arg\(\w+\)|att\(\w+,\w+\))\.$') 
 
     with open(file_path, 'r') as file:
         for line in file:
@@ -293,8 +293,8 @@ def main():
 
         arg_framework = read_AF_from_file(file) # Building the argumentation framework.
 
-        result = solve_problem(param, arg_framework, arg_set)
-        print_result(result)
+        result = solve_problem(param, arg_framework, arg_set) # Solving problem according to the arguments of the command line.
+        print_result(result) # Printing result
 
     except ValueError as e:
         print(f"Error: {e}")
