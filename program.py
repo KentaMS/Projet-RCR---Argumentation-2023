@@ -13,7 +13,7 @@ def get_command_args() -> tuple:
     # Arguments for the command.
     parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
     parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
-    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
+    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
     
     # Read args in the command.
     command_args = parser.parse_args()
@@ -25,7 +25,8 @@ def get_command_args() -> tuple:
     # Get command args.
     file_name = command_args.file # Recover the file containing the Argumentation Framework information to read (.apx).
     problem_name = command_args.param # Recover the name of the problem (VE-CO, DC-CO, DS-CO...).
-    args_value = set(command_args.args.split(",")) # Recover the argument set to query.
+    
+    args_value = "" if command_args.args is None else set(command_args.args.split(","))
 
     # Checks for valid arguments. Raise a ValueError if at least one of them is not valid.
     if not all(regex_pattern.match(argument) for argument in args_value):    
@@ -60,15 +61,26 @@ def read_AF_from_file(file_path: str) -> dict:
         sys.exit(1)
 
     graph = {}
-        
+    # Regular expression for arguments. 
+    # Each argument is defined in a line of the form "arg(name_argument)." 
+    # Each attack is defined in a line of the form "att(name_argument_1,name_argument_2)."
+    regex_pattern = re.compile(r'^(arg\(\w+\)|att\(\w+,\w+\))\.$')
+
     with open(file_path, 'r') as file:
         for line in file:
+            # Checks for valid syntax for the representation of the AF in the text file. Raise a ValueError if at least one of them is not valid.
+            if not regex_pattern.match(line):
+                raise ValueError("Unaccepted argument or attack for the representation of the AF in the text file.\n"+ 
+                                "Each argument must be defined in a line of the form 'arg(name_argument).'\n"+
+                                "Each attack must be defined in a line of the form 'att(name_argument_1,name_argument_2).'.")
             content = line[line.find("(")+1 : line.find(")")]
             if line.startswith("arg"):
                 argument = content
                 graph[argument] = set()
             elif line.startswith("att"):
                 attacker, attacked = content.split(',')[0], content.split(',')[1]
+                if not attacker in graph.keys():
+                    raise ValueError("One of the attacker is not part of the arguments. All arguments must be defined before attacks.")
                 graph[attacker].add(attacked)
                 
     return graph
@@ -258,10 +270,10 @@ def main():
     try:
         param, file, arg_set = get_command_args() # Recover the arguments provided with the script execution.
 
-        arg_framework = read_AF_from_file(file)
+        arg_framework = read_AF_from_file(file) # Building the argumentation framework.
 
-        result = solve_problem(param, arg_framework, arg_set)
-        print_result(result)
+        result = solve_problem(param, arg_framework, arg_set) # Solving problem according to the arguments of the command line.
+        print_result(result) # Printing result
 
     except ValueError as e:
         print(f"Error: {e}")
