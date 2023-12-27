@@ -3,13 +3,12 @@
 Énoncé du projet :
 https://moodle.u-paris.fr/mod/resource/view.php?id=975445  
 
-## Conseils d'utilisation :
-- Utiliser **Python 3.10+**.  
+## Conseils d'utilisation : 
 - Ouvrir un cmd et se placer au même niveau que le programme python *program.py*.
 
 - Lancer le programme à l'aide du cmd en spécifiant les paramètres de la manière suivante :
 
-      ~$ python3 program.py -p [type_du_problème] -f [chemin_vers_le_fichier] -a [ARG1,ARG2,...,ARGn]
+      ~$ python program.py -p [type_du_problème] -f [chemin_vers_le_fichier] -a [ARG1,ARG2,...,ARGn]
    
 Avec :
 -   **[type_du_problème]** = VE-CO, DC-CO, DS-CO, VE-ST, DC-ST ou DS-ST.  
