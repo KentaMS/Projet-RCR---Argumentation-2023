@@ -161,3 +161,6 @@ cython_debug/
 
 # Temps file
 tempCodeRunnerFile.py
+python2pseudo.py
+py_file_pseudo.txt
+py_file.py
