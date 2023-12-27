@@ -134,9 +134,29 @@ def powerset(iterable: set|tuple|list) -> set:
     return set(chain.from_iterable(combinations(s, r) for r in range(len(s) + 1)))
 
 
-def is_a_complete_extension(arg_framework: dict, arg_set: set) -> bool:
-    """ 
-    Checks if the provided argument set is a complete extension, or not.
+def find_all_sigma_extensions(arg_framework: dict, semantics: str) -> set:
+    """
+    Returns the set of all σ extensions of the argumentation framework.
+    """
+    all_sigma_extensions = set()
+    
+    # Iterate over every possible combination of arguments in the framework,
+    # and add it to the all_sigma_extensions set if it is an extension with respect to the semantics σ.
+    all_arguments = list(arg_framework.keys())
+    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
+        if semantics == "COMPLETE":
+            if verify_complete_extension(arg_framework, arg_set):
+                all_sigma_extensions.add(arg_set)
+        if semantics == "STABLE":
+            if verify_stable_extension(arg_framework, arg_set):
+                all_sigma_extensions.add(arg_set)
+
+    return all_sigma_extensions
+
+
+def verify_complete_extension(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Determine whether the provided argument set is a complete extension of the argumentation framework, or not.
     """
     # The set has to be admissible to be a complete extension.
     if not is_admissible(arg_framework, arg_set): return False 
@@ -146,64 +166,6 @@ def is_a_complete_extension(arg_framework: dict, arg_set: set) -> bool:
 
     # Return False if at least one argument that isn't in the provided set is defended by an argument of the set, and True otherwise.
     return not any(is_defended(arg_framework, arg_set, other_arg) for other_arg in other_args)
-
-
-def find_all_complete_extensions(arg_framework: dict) -> set:
-    """
-    Returns the set of all complete extensions of the argumentation framework.
-    """
-    all_complete_extensions = set()
-    
-    # Iterate over every possible combination of arguments in the framework,
-    # and add it to the all_complete_extensions set if it is a complete extension.
-    all_arguments = list(arg_framework.keys())
-    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
-        if is_a_complete_extension(arg_framework, arg_set):
-            all_complete_extensions.add(arg_set)
-            
-    return all_complete_extensions
-    
-
-def find_all_stable_extensions(arg_framework: dict) -> set:
-    """
-    Returns the set of all stable extensions of the argumentation framework.
-    """
-    all_stable_extensions = set()
-
-    # Iterate over every possible combination of arguments in the framework,
-    # and add it to the all_stable_extensions set if it is a stable extension.
-    all_arguments = list(arg_framework.keys())
-    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
-        if verify_stable_extension(arg_framework, arg_set):
-            all_stable_extensions.add(arg_set)
-
-    return all_stable_extensions
-
-
-def verify_complete_extension(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Determine whether the provided argument set is a complete extension of the argumentation framework, or not.
-    """
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return tuple(sorted(arg_set)) in complete_extensions # Sort the set for the comparison to work properly. Otherwise, (A,D) != (D,A).
-
-
-def decide_complete_credulous(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Decide the Credulous acceptability of the given argument with respect to σ = complete.
-    """
-    argument = list(arg_set)[0] # Recover the only provided argument.
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return any(argument in complete_extension for complete_extension in complete_extensions)
-
-
-def decide_complete_skeptical(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Decide the Skeptical acceptability of the given argument with respect to σ = complete.
-    """
-    argument = list(arg_set)[0] # Recover the only provided argument.
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return all(argument in complete_extension for complete_extension in complete_extensions)
 
 
 def verify_stable_extension(arg_framework: dict, arg_set: set) -> bool:
@@ -223,9 +185,25 @@ def verify_stable_extension(arg_framework: dict, arg_set: set) -> bool:
             if attacked_arg in other_args:
                 other_args.remove(attacked_arg)
 
-    if len(other_args) == 0: # All args were attacked, so arg_set is stable.
-        return True
-    return False
+    return len(other_args) == 0 # All args were attacked, so arg_set is stable.
+
+
+def decide_complete_credulous(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Decide the Credulous acceptability of the given argument with respect to σ = complete.
+    """
+    argument = list(arg_set)[0] # Recover the only provided argument.
+    complete_extensions = find_all_sigma_extensions(arg_framework, "COMPLETE")
+    return any(argument in complete_extension for complete_extension in complete_extensions)
+
+
+def decide_complete_skeptical(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Decide the Skeptical acceptability of the given argument with respect to σ = complete.
+    """
+    argument = list(arg_set)[0] # Recover the only provided argument.
+    complete_extensions = find_all_sigma_extensions(arg_framework, "COMPLETE")
+    return all(argument in complete_extension for complete_extension in complete_extensions)
 
 
 def decide_stable_credulous(arg_framework: dict, arg_set: set) -> bool:
@@ -233,7 +211,7 @@ def decide_stable_credulous(arg_framework: dict, arg_set: set) -> bool:
     Decide the Credulous acceptability of the given argument with respect to σ = stable.
     """
     argument = list(arg_set)[0] # Recover the only provided argument.
-    stable_ext = find_all_stable_extensions(arg_framework)
+    stable_ext = find_all_sigma_extensions(arg_framework, "STABLE")
     return any(argument in stable for stable in stable_ext)
 
 
@@ -242,7 +220,7 @@ def decide_stable_skeptical(arg_framework: dict, arg_set: set) -> bool:
     Decide the Skeptical acceptability of the given argument with respect to σ = stable.
     """
     argument = list(arg_set)[0] # Recover the only provided argument.
-    stable_ext = find_all_stable_extensions(arg_framework)
+    stable_ext = find_all_sigma_extensions(arg_framework, "STABLE")
     return all(argument in stable for stable in stable_ext)
 
 
