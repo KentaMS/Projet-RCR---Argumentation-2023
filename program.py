@@ -13,7 +13,7 @@ def get_command_args() -> tuple:
     # Arguments for the command.
     parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
     parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
-    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
+    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
     
     # Read args in the command.
     command_args = parser.parse_args()
@@ -25,7 +25,8 @@ def get_command_args() -> tuple:
     # Get command args.
     file_name = command_args.file # Recover the file containing the Argumentation Framework information to read (.apx).
     problem_name = command_args.param # Recover the name of the problem (VE-CO, DC-CO, DS-CO...).
-    args_value = set(command_args.args.split(",")) # Recover the argument set to query.
+    
+    args_value = "" if command_args.args is None else set(command_args.args.split(","))
 
     # Checks for valid arguments. Raise a ValueError if at least one of them is not valid.
     if not all(regex_pattern.match(argument) for argument in args_value):    
