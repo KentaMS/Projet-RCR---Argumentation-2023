@@ -1,5 +1,5 @@
 arg(A).
-arg(B)
+arg(B).
 arg(C).
 arg(D).
 arg(E).
@@ -10,6 +10,6 @@ att(A,C).
 att(B,C).
 att(C,D).
 att(D,E).
-att(E,D)
+att(E,D).
 att(F,B).
 att(A,F).

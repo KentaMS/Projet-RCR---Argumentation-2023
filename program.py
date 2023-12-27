@@ -13,7 +13,7 @@ def get_command_args() -> tuple:
     # Arguments for the command.
     parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
     parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
-    parser.add_argument('-a', '--args', type=str, help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
+    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).')
     
     # Read args in the command.
     command_args = parser.parse_args()
@@ -25,7 +25,8 @@ def get_command_args() -> tuple:
     # Get command args.
     file_name = command_args.file # Recover the file containing the Argumentation Framework information to read (.apx).
     problem_name = command_args.param # Recover the name of the problem (VE-CO, DC-CO, DS-CO...).
-    args_value = set(command_args.args.split(",")) # Recover the argument set to query.
+    
+    args_value = "" if command_args.args is None else set(command_args.args.split(","))
 
     # Checks for valid arguments. Raise a ValueError if at least one of them is not valid.
     if not all(regex_pattern.match(argument) for argument in args_value):    
@@ -60,15 +61,26 @@ def read_AF_from_file(file_path: str) -> dict:
         sys.exit(1)
 
     graph = {}
-        
+    # Regular expression for arguments. 
+    # Each argument is defined in a line of the form "arg(name_argument)." 
+    # Each attack is defined in a line of the form "att(name_argument_1,name_argument_2)."
+    regex_pattern = re.compile(r'^(arg\(\w+\)|att\(\w+,\w+\))\.$')
+
     with open(file_path, 'r') as file:
         for line in file:
+            # Checks for valid syntax for the representation of the AF in the text file. Raise a ValueError if at least one of them is not valid.
+            if not regex_pattern.match(line):
+                raise ValueError("Unaccepted argument or attack for the representation of the AF in the text file.\n"+ 
+                                "Each argument must be defined in a line of the form 'arg(name_argument).'\n"+
+                                "Each attack must be defined in a line of the form 'att(name_argument_1,name_argument_2).'.")
             content = line[line.find("(")+1 : line.find(")")]
             if line.startswith("arg"):
                 argument = content
                 graph[argument] = set()
             elif line.startswith("att"):
                 attacker, attacked = content.split(',')[0], content.split(',')[1]
+                if not attacker in graph.keys():
+                    raise ValueError("One of the attacker is not part of the arguments. All arguments must be defined before attacks.")
                 graph[attacker].add(attacked)
                 
     return graph
@@ -122,9 +134,30 @@ def powerset(iterable: set|tuple|list) -> set:
     return set(chain.from_iterable(combinations(s, r) for r in range(len(s) + 1)))
 
 
-def is_a_complete_extension(arg_framework: dict, arg_set: set) -> bool:
-    """ 
-    Checks if the provided argument set is a complete extension, or not.
+def find_all_sigma_extensions(arg_framework: dict, semantics: str) -> set:
+    """
+    Returns the set of all σ extensions of the argumentation framework.
+    """
+    all_sigma_extensions = set()
+    
+    # Iterate over every possible combination of arguments in the framework,
+    # and add it to the all_sigma_extensions set if it is an extension with respect to the semantics σ.
+    all_arguments = list(arg_framework.keys())
+    if semantics == "COMPLETE":
+        for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
+            if verify_complete_extension(arg_framework, arg_set):
+                all_sigma_extensions.add(arg_set)
+    elif semantics == "STABLE":
+        for arg_set in powerset(all_arguments):
+            if verify_stable_extension(arg_framework, arg_set):
+                all_sigma_extensions.add(arg_set)
+
+    return all_sigma_extensions
+
+
+def verify_complete_extension(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Determine whether the provided argument set is a complete extension of the argumentation framework, or not.
     """
     # The set has to be admissible to be a complete extension.
     if not is_admissible(arg_framework, arg_set): return False 
@@ -134,64 +167,6 @@ def is_a_complete_extension(arg_framework: dict, arg_set: set) -> bool:
 
     # Return False if at least one argument that isn't in the provided set is defended by an argument of the set, and True otherwise.
     return not any(is_defended(arg_framework, arg_set, other_arg) for other_arg in other_args)
-
-
-def find_all_complete_extensions(arg_framework: dict) -> set:
-    """
-    Returns the set of all complete extensions of the argumentation framework.
-    """
-    all_complete_extensions = set()
-    
-    # Iterate over every possible combination of arguments in the framework,
-    # and add it to the all_complete_extensions set if it is a complete extension.
-    all_arguments = list(arg_framework.keys())
-    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
-        if is_a_complete_extension(arg_framework, arg_set):
-            all_complete_extensions.add(arg_set)
-            
-    return all_complete_extensions
-    
-
-def find_all_stable_extensions(arg_framework: dict) -> set:
-    """
-    Returns the set of all stable extensions of the argumentation framework.
-    """
-    all_stable_extensions = set()
-
-    # Iterate over every possible combination of arguments in the framework,
-    # and add it to the all_stable_extensions set if it is a stable extension.
-    all_arguments = list(arg_framework.keys())
-    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
-        if verify_stable_extension(arg_framework, arg_set):
-            all_stable_extensions.add(arg_set)
-
-    return all_stable_extensions
-
-
-def verify_complete_extension(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Determine whether the provided argument set is a complete extension of the argumentation framework, or not.
-    """
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return tuple(sorted(arg_set)) in complete_extensions # Sort the set for the comparison to work properly. Otherwise, (A,D) != (D,A).
-
-
-def decide_complete_credulous(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Decide the Credulous acceptability of the given argument with respect to σ = complete.
-    """
-    argument = list(arg_set)[0] # Recover the only provided argument.
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return any(argument in complete_extension for complete_extension in complete_extensions)
-
-
-def decide_complete_skeptical(arg_framework: dict, arg_set: set) -> bool:
-    """
-    Decide the Skeptical acceptability of the given argument with respect to σ = complete.
-    """
-    argument = list(arg_set)[0] # Recover the only provided argument.
-    complete_extensions = find_all_complete_extensions(arg_framework)
-    return all(argument in complete_extension for complete_extension in complete_extensions)
 
 
 def verify_stable_extension(arg_framework: dict, arg_set: set) -> bool:
@@ -211,9 +186,25 @@ def verify_stable_extension(arg_framework: dict, arg_set: set) -> bool:
             if attacked_arg in other_args:
                 other_args.remove(attacked_arg)
 
-    if len(other_args) == 0: # All args were attacked, so arg_set is stable.
-        return True
-    return False
+    return len(other_args) == 0 # All args were attacked, so arg_set is stable.
+
+
+def decide_complete_credulous(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Decide the Credulous acceptability of the given argument with respect to σ = complete.
+    """
+    argument = list(arg_set)[0] # Recover the only provided argument.
+    complete_extensions = find_all_sigma_extensions(arg_framework, "COMPLETE")
+    return any(argument in complete_extension for complete_extension in complete_extensions)
+
+
+def decide_complete_skeptical(arg_framework: dict, arg_set: set) -> bool:
+    """
+    Decide the Skeptical acceptability of the given argument with respect to σ = complete.
+    """
+    argument = list(arg_set)[0] # Recover the only provided argument.
+    complete_extensions = find_all_sigma_extensions(arg_framework, "COMPLETE")
+    return all(argument in complete_extension for complete_extension in complete_extensions)
 
 
 def decide_stable_credulous(arg_framework: dict, arg_set: set) -> bool:
@@ -221,7 +212,7 @@ def decide_stable_credulous(arg_framework: dict, arg_set: set) -> bool:
     Decide the Credulous acceptability of the given argument with respect to σ = stable.
     """
     argument = list(arg_set)[0] # Recover the only provided argument.
-    stable_ext = find_all_stable_extensions(arg_framework)
+    stable_ext = find_all_sigma_extensions(arg_framework, "STABLE")
     return any(argument in stable for stable in stable_ext)
 
 
@@ -230,7 +221,7 @@ def decide_stable_skeptical(arg_framework: dict, arg_set: set) -> bool:
     Decide the Skeptical acceptability of the given argument with respect to σ = stable.
     """
     argument = list(arg_set)[0] # Recover the only provided argument.
-    stable_ext = find_all_stable_extensions(arg_framework)
+    stable_ext = find_all_sigma_extensions(arg_framework, "STABLE")
     return all(argument in stable for stable in stable_ext)
 
 
@@ -280,11 +271,10 @@ def main():
     try:
         param, file, arg_set = get_command_args() # Recover the arguments provided with the script execution.
 
-        path_to_data = "./data/"
-        arg_framework = read_AF_from_file(path_to_data + file)
+        arg_framework = read_AF_from_file(file) # Building the argumentation framework.
 
-        result = solve_problem(param, arg_framework, arg_set)
-        print_result(result)
+        result = solve_problem(param, arg_framework, arg_set) # Solving problem according to the arguments of the command line.
+        print_result(result) # Printing result
 
     except ValueError as e:
         print(f"Error: {e}")
