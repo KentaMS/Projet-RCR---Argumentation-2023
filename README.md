@@ -5,16 +5,14 @@ https://moodle.u-paris.fr/mod/resource/view.php?id=975445
 
 ## Conseils d'utilisation :
 - Utiliser **Python 3.10+**.  
-- Placer le fichier .apx contenant les informations de l'Abstract Argumentation Framework (AF) au même niveau que le programme python *program.py* (même répertoire).  
--  Ouvrir un cmd et se placer au même niveau que le programme python *program.py*.
+- Ouvrir un cmd et se placer au même niveau que le programme python *program.py*.
 
 - Lancer le programme à l'aide du cmd en spécifiant les paramètres de la manière suivante :
 
-      ~$ python3 program.py -f [nom du fichier].apx -p [type du problème] -a [ARG1,ARG2,...,ARGn]
- 
-
+      ~$ python3 program.py -p [type_du_problème] -f [chemin_vers_le_fichier] -a [ARG1,ARG2,...,ARGn]
+   
 Avec :
--   **[type du problème]** = VE-CO, DC-CO, DS-CO, VE-ST, DC-ST ou DS-ST.  
+-   **[type_du_problème]** = VE-CO, DC-CO, DS-CO, VE-ST, DC-ST ou DS-ST.  
 -   **[ARG1,ARG2,...,ARGn]** selon les conventions de nommage des arguments : alphanumérique sensible à la case, '_' compris, et "att" et "arg" exclus.
 
 Dans le cas d'un problème DC-XX ou DS-XX, un seul argument ARG doit être spécifié avec -a.  
@@ -33,6 +31,8 @@ Voici un petit exemple de quelques commandes valides :
     NO
     ~$ python3 .\program.py -p VE-CO -f test_af5.apx -a
     YES
+
+Dans ces exemples, les fichiers se trouvent au niveau du répertoire courant.
 
 * À noter qu'une commande invalide (par exemple, exécution de la commande avec un fichier qui n'existe pas) produira une réponse spécifiant l'erreur.
 
