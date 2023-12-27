@@ -18,6 +18,7 @@ Avec :
 -   **[ARG1,ARG2,...,ARGn]** selon les conventions de nommage des arguments : alphanumérique sensible à la case, '_' compris, et "att" et "arg" exclus.
 
 Dans le cas d'un problème DC-XX ou DS-XX, un seul argument ARG doit être spécifié avec -a.  
+* Remarque : Pour tester l'ensemble vide en tant qu'argument, il suffit d'utiliser l'option -a sans aucun argument derrière, ou bien simplement ne pas spéficier l'option du tout.
 
 ## Exemple de commandes :
 Un helper récapitulant ces différentes options est disponible via la commande suivante :
@@ -30,6 +31,8 @@ Voici un petit exemple de quelques commandes valides :
     YES
     ~$ python3 .\program.py -p VE-ST -f test_af1.apx -a A,C
     NO
+    ~$ python3 .\program.py -p VE-CO -f test_af5.apx -a
+    YES
 
 * À noter qu'une commande invalide (par exemple, exécution de la commande avec un fichier qui n'existe pas) produira une réponse spécifiant l'erreur.
 
