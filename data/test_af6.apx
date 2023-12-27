@@ -1,0 +1,16 @@
+arg(A1).
+arg(A2).
+arg(A3).
+arg(A4).
+arg(A5).
+arg(A6).
+arg(A7).
+att(A1,A2).
+att(A2,A3).
+att(A3,A4).
+att(A4,A3).
+att(A4,A5).
+att(A5,A6).
+att(A6,A7).
+att(A6,A7).
+att(A7,A5).
