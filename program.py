@@ -143,11 +143,12 @@ def find_all_sigma_extensions(arg_framework: dict, semantics: str) -> set:
     # Iterate over every possible combination of arguments in the framework,
     # and add it to the all_sigma_extensions set if it is an extension with respect to the semantics σ.
     all_arguments = list(arg_framework.keys())
-    for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
-        if semantics == "COMPLETE":
+    if semantics == "COMPLETE":
+        for arg_set in powerset(all_arguments): # powerset() returns every combination of the provided arguments as a set of sorted tuples.
             if verify_complete_extension(arg_framework, arg_set):
                 all_sigma_extensions.add(arg_set)
-        if semantics == "STABLE":
+    elif semantics == "STABLE":
+        for arg_set in powerset(all_arguments):
             if verify_stable_extension(arg_framework, arg_set):
                 all_sigma_extensions.add(arg_set)
 
