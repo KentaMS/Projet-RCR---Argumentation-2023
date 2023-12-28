@@ -1,3 +1,5 @@
+# AF_program.py
+
 """
 Main module for the Abstract Argumentation Solver.
 This module serves as the entry point for the abstract argumentation solver project. It coordinates the execution of the solver and other relevant functionalities.
