@@ -7,7 +7,7 @@ To run the abstract argumentation solver, execute this module using a command pr
 Please refer to the helper by running: "python program.py --help" to view the expected arguments.
 
 Authors: Latif YAYA, Nassim LATTAB, Kentaro SAUCE
-Date: 25/12/2023
+Creation Date: 25/12/2023
 """
 
 import sys, AF_solver
