@@ -81,13 +81,8 @@ def verify_stable_extension(arg_framework: dict, arg_set: set) -> bool:
     other_args = {argument for argument in arg_framework.keys() if argument not in arg_set}
 
     # The argument set is a stable extension if all other arguments of the framework are attacked by the provided arguments.
-    # arg_set is stable if all arguments in other_args are attacked.
-    for current_arg in arg_set:
-        for attacked_arg in arg_framework[current_arg]:
-            if attacked_arg in other_args:
-                other_args.remove(attacked_arg)
-
-    return len(other_args) == 0 # All args were attacked, so arg_set is stable.
+    # Then it is not stable if at least one of the other arguments is never attacked.
+    return all(any(other_arg in arg_framework[current_arg] for current_arg in arg_set) for other_arg in other_args)
 
 
 def decide_complete_credulous(arg_framework: dict, arg_set: set) -> bool:
