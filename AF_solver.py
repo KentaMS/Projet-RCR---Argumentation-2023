@@ -19,7 +19,7 @@ def get_command_args() -> tuple:
     # Arguments for the command.
     parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
     parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
-    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems).'
+    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems). '
                         'Use without any value or leave it out to test an empty set as an argument.')
     
     # Read args in the command.
