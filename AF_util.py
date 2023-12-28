@@ -33,9 +33,7 @@ def is_defended(arg_framework: dict, arg_set: set, argument: str) -> bool:
     # Return True if at least one argument of the set defends the argument in case of an attack, and False otherwise.
     for attacker in arg_framework:
         attacked_args = arg_framework[attacker]
-        if argument in attacked_args:# Authors: Latif YAYA, Nassim LATTAB, Kentaro SAUCE
-# Date: 25/12/2023
-
+        if argument in attacked_args:
             if not any(attacker in arg_framework[defender] for defender in arg_set):
                 return False
     return True
