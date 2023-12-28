@@ -3,6 +3,9 @@
 Énoncé du projet :
 https://moodle.u-paris.fr/mod/resource/view.php?id=975445  
 
+## Auteurs :
+Latif YAYA, Nassim LATTAB, Kentaro SAUCE
+
 ## Conseils d'utilisation : 
 - Ouvrir un cmd et se placer au même niveau que le programme python *program.py*.
 
