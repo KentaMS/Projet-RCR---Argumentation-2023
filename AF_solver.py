@@ -18,8 +18,8 @@ def get_command_args() -> tuple:
     
     # Arguments for the command.
     parser.add_argument('-f', '--file', type=str, help='The .apx file to read, which contains the Abstract Argumentation Framework information.')
-    parser.add_argument('-p', '--param', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
-    parser.add_argument('-a', '--args', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems). '
+    parser.add_argument('-p', '--problem', type=str, help='VE-CO, DC-CO, DS-CO, VE-ST, DC-ST or DS-ST.')
+    parser.add_argument('-a', '--arguments', type=str, nargs='?', help='ARG1,ARG2,...,ARGn the names of the arguments in the query set E (for VE-XX problems) or ARG (for DC-XX and DS-XX problems). '
                         'Use without any value or leave it out to test an empty set as an argument.')
     
     # Read args in the command.
@@ -31,9 +31,9 @@ def get_command_args() -> tuple:
 
     # Get command args.
     file_name = command_args.file # Recover the file containing the Argumentation Framework information to read (.apx).
-    problem_name = command_args.param # Recover the name of the problem (VE-CO, DC-CO, DS-CO...).
+    problem_name = command_args.problem # Recover the name of the problem (VE-CO, DC-CO, DS-CO...).
     
-    args_value = "" if command_args.args is None else set(command_args.args.split(","))
+    args_value = "" if command_args.arguments is None else set(command_args.arguments.split(","))
 
     # Checks for valid arguments. Raise a ValueError if at least one of them is not valid.
     if not all(regex_pattern.match(argument) for argument in args_value):    
@@ -83,24 +83,24 @@ def read_AF_from_file(file_path: str) -> dict:
     return graph
 
 
-def solve_problem(param: str, arg_framework: dict, arg_set: set) -> bool:
+def solve_problem(problem: str, arg_framework: dict, arg_set: set) -> bool:
     """
     Returns either True (YES) or False (NO) depending on the problem for the result to be printed in main().
     """
     # Return False if at least one of the arguments in the provided set does not belong to the argumentation framework.
     if not AF_util.is_argument_set_in_AF(arg_framework, arg_set): return False
 
-    if param == "VE-CO":
+    if problem == "VE-CO":
         return  AF_extensions.verify_complete_extension(arg_framework, arg_set)
-    elif param == "DC-CO":
+    elif problem == "DC-CO":
         return  AF_extensions.decide_complete_credulous(arg_framework, arg_set)
-    elif param == "DS-CO":
+    elif problem == "DS-CO":
         return  AF_extensions.decide_complete_skeptical(arg_framework, arg_set)
-    elif param == "VE-ST":
+    elif problem == "VE-ST":
         return  AF_extensions.verify_stable_extension(arg_framework, arg_set)
-    elif param == "DC-ST":
+    elif problem == "DC-ST":
         return  AF_extensions.decide_stable_credulous(arg_framework, arg_set)
-    elif param == "DS-ST":
+    elif problem == "DS-ST":
         return  AF_extensions.decide_stable_skeptical(arg_framework, arg_set)
     else:
         raise ValueError("Unknown parameter.\n" +
