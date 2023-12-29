@@ -9,12 +9,12 @@ Creation Date: 25/12/2023
 
 from itertools import chain, combinations # Used to generate the powerset @see powerset(iterable).
 
-def is_number_of_arguments_valid(arg_set: set, param: str) -> bool:
+def is_number_of_arguments_valid(arg_set: set, problem: str) -> bool:
     """ 
     Checks if the number of provided arguments is valid or not.
     Only one should be specified when using the Determine-XX problems.
     """
-    if param.startswith("DC") or param.startswith("DS"):
+    if problem.startswith("DC") or problem.startswith("DS"):
         return not len(arg_set) != 1
     return True
 

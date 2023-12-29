@@ -1,4 +1,4 @@
-# AF_program.py
+# program.py
 
 """
 Main module for the Abstract Argumentation Solver.
@@ -14,11 +14,11 @@ import sys, AF_solver
 
 def main():
     try:
-        param, file, arg_set = AF_solver.get_command_args() # Recover the arguments provided with the script execution.
+        problem, file, argument_set = AF_solver.get_command_args() # Recover the arguments provided with the script execution.
 
-        arg_framework = AF_solver.read_AF_from_file(file) # Building the argumentation framework.
+        argumentation_framework = AF_solver.read_AF_from_file(file) # Building the argumentation framework.
 
-        result = AF_solver.solve_problem(param, arg_framework, arg_set) # Solving problem according to the arguments of the command line.
+        result = AF_solver.solve_problem(problem, argumentation_framework, argument_set) # Solving problem according to the arguments of the command line.
         AF_solver.print_result(result) # Printing result
 
     except ValueError as e:
